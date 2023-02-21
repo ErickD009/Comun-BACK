@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Cors;
 using ComunBACK.Models;
 using ComunBACK.Datos;
 
-namespace ComunBack.Controllers
-{
+namespace ComunBack.Controllers;
+
     [Route("Usuario")]
     public class ComunController : ControllerBase
     {
@@ -53,21 +53,26 @@ namespace ComunBack.Controllers
 
         }
 
+
+
+
         [HttpPost]
         [Route("Usuario_Traer_Empresas")]
-        public IActionResult Usuario_Traer_Empresas([FromBody] Usuario usr)
+        //public async Task<IActionResult> Usuario_Traer_Empresas(string rut)
+        public async Task<IActionResult> Usuario_Traer_Empresas([FromBody] UsuarioRut usrt)
         {
             try
             {
                 List<Usuario_X_Empresa> lista = new List<Usuario_X_Empresa>();
-                DataSet ds = new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(usr.USR_LOGIN);
+                //DataSet ds = new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(rut);
+                DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(usrt.usrlogin));
                 foreach (DataRow row in ds.Tables[1].Rows)
-                {   
+                {
                     Usuario_X_Empresa UxE = new Usuario_X_Empresa();
                     UxE.cli_autoid = long.Parse((string)row["cli_autoid"].ToString());
                     UxE.nombreCliente = row["nombreCliente"].ToString();
                     UxE.marcaRespuestaCorrecta = row["marcaRespuestaCorrecta"].ToString();
-                    
+
                     lista.Add(UxE);
                 }
 
@@ -82,17 +87,22 @@ namespace ComunBack.Controllers
         }
 
 
-        [HttpPost]
-        [Route("GeneraToken")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public String GeneraToken()
-        {
-            Encripta encripta = new Encripta();
-            string token = encripta.Encrypt(DateTime.Now.ToString(), "");
-            return token;
-        }
 
+        //[HttpPost]
+        //[Route("GeneraToken")]
+        //[ApiExplorerSettings(IgnoreApi = true)]
+        //public String GeneraToken()
+        //{
+        //    Encripta encripta = new Encripta();
+        //    string token = encripta.Encrypt(DateTime.Now.ToString(), "");
+        //    return token;
+        //}
+
+    
 
     }
-}
+
+        
+
+
 
