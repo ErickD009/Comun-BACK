@@ -54,55 +54,53 @@ namespace ComunBack.Controllers;
         }
 
 
-
-
-        [HttpPost]
-        [Route("Usuario_Traer_Empresas")]
-        //public async Task<IActionResult> Usuario_Traer_Empresas(string rut)
-        public async Task<IActionResult> Usuario_Traer_Empresas([FromBody] UsuarioRut usrt)
+    [HttpPost]
+    [Route("Usuario_Traer_Empresas")]
+    public async Task<IActionResult> Usuario_Traer_Empresas([FromBody] UsuarioRut usrt)
+    {
+        try
         {
-            try
+            List<Usuario_X_Empresa> lista = new List<Usuario_X_Empresa>();
+            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(usrt.usrlogin));
+            if (ds.Tables[1].Rows.Count == 0)
             {
-                List<Usuario_X_Empresa> lista = new List<Usuario_X_Empresa>();
-                //DataSet ds = new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(rut);
-                DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).TRABAJADOR_TraeListadoEmpresas(usrt.usrlogin));
+                return BadRequest("No se encontraron empresas para este usuario.");
+            }
+            else
+            {
                 foreach (DataRow row in ds.Tables[1].Rows)
                 {
                     Usuario_X_Empresa UxE = new Usuario_X_Empresa();
                     UxE.cli_autoid = long.Parse((string)row["cli_autoid"].ToString());
                     UxE.nombreCliente = row["nombreCliente"].ToString();
                     UxE.marcaRespuestaCorrecta = row["marcaRespuestaCorrecta"].ToString();
-
                     lista.Add(UxE);
                 }
 
                 return Ok(lista);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Se produjo un error al intentar traer lA del usuario. Detalle: " + ex.Message);
             }
 
         }
-
-
-
-        //[HttpPost]
-        //[Route("GeneraToken")]
-        //[ApiExplorerSettings(IgnoreApi = true)]
-        //public String GeneraToken()
-        //{
-        //    Encripta encripta = new Encripta();
-        //    string token = encripta.Encrypt(DateTime.Now.ToString(), "");
-        //    return token;
-        //}
-
-    
-
+        catch (Exception ex)
+        {
+            return BadRequest("Se produjo un error al intentar traer la lista de empresas del usuario. Detalle: " + ex.Message);
+        }
     }
 
-        
+
+    //[HttpPost]
+    //[Route("GeneraToken")]
+    //[ApiExplorerSettings(IgnoreApi = true)]
+    //public String GeneraToken()
+    //{
+    //    Encripta encripta = new Encripta();
+    //    string token = encripta.Encrypt(DateTime.Now.ToString(), "");
+    //    return token;
+    //}
+
+}
+
+
 
 
 
