@@ -85,6 +85,30 @@ namespace ComunBACK.Datos
             }
         }
 
+        public DataSet Usuario_Actualizar_Password(string USR_PASS, string USR_RUT)
+        {
+            DataSet Resultados = new DataSet();
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+                {
+                    sqlConn.Open();
+                    SqlDataAdapter cmd = new SqlDataAdapter("USUARIO_ActualizaClave", sqlConn);
+                    cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_PASS", USR_PASS);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", USR_RUT);
+                    cmd.Fill(Resultados);
+                }
+
+                return Resultados;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + " - " + ex.Source);
+            }
+        }
+
         public DataSet EMAIL_Solicitud_Nueva_Contraseña(string de, string para, string cc, string asunto, string cuerpo, string adjuntos, int eshtml, string nombreSistema = "", string metodoEnvio = "")
         {
             DataSet Resultados = new DataSet();
@@ -115,8 +139,7 @@ namespace ComunBACK.Datos
                 throw new Exception(ex.Message + " - " + ex.Source);
             }
         }
-        
-        
+         
     }
 
 }
