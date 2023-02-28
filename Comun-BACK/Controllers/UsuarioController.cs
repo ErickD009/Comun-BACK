@@ -16,12 +16,14 @@ namespace ComunBack.Controllers;
 [Route("Usuario")]
 public class ComunController : ControllerBase
 {
-  private readonly IConfiguration _configuration;
+    private readonly IConfiguration _configuration;
+    private readonly string _urlRecuperacion;
     private readonly int tiempoEspera;
     public ComunController(IConfiguration configuration)
     {
     _configuration = configuration;
     tiempoEspera = configuration.GetValue<int>("tiempoEspera");
+    _urlRecuperacion = _configuration.GetValue<string>("urlRecuperacion");
     }
 
     [HttpPost]
@@ -91,7 +93,7 @@ public class ComunController : ControllerBase
 
     [HttpPost]
     [Route("Usuario_Enviar_Correo_Recuperacion")]
-    public async Task<IActionResult> Usuario_Enviar_Correo_Recuperacion([FromBody] Email correo, string rut)
+    public async Task<IActionResult> Usuario_Enviar_Correo_Recuperacion([FromBody] CorreoRecuperacion correo)
     {
 
         try
@@ -100,8 +102,8 @@ public class ComunController : ControllerBase
 
             Encripta encripta = new Encripta();
             string tokenHash = encripta.Encrypt(DateTime.Now.ToString(), "");
-            string rutHash = encripta.Encrypt(rut, "");
-            string urlRecupera = "https://sitios.cygnus-est.cl/login/";
+            string rutHash = encripta.Encrypt(correo.Rut, "");
+            string urlRecupera = _urlRecuperacion;
 
             UsuarioDA emailDA = new UsuarioDA(_configuration);
             Email correoNuevo = new Email
@@ -109,8 +111,9 @@ public class ComunController : ControllerBase
                 Para = correo.Para,
                 De = "sistemas@cygnus.cl",
                 CC = "",
-                Asunto = "Recuperación Contraseña Sistemas Cygnus prueba4",
-                Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + urlRecupera + "recuperaPassword.aspx?tok=" + tokenHash + "&rut=" + rutHash + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
+                Asunto = "Recuperación Contraseña Sistemas Cygnus prueba5",
+                Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + urlRecupera + "?token=" + tokenHash + "&rut=" + rutHash + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
+                //Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + urlRecupera + "recuperaPassword.aspx?tok=" + tokenHash + "&rut=" + rutHash + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
                 Adjuntos = "",
                 EsHtml = 1,
                 NombreSistema = "Login",
@@ -151,16 +154,29 @@ public class ComunController : ControllerBase
     {
         try
         {
-            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Actualizar_Password(usrp.USR_PASS,usrp.USR_RUT));
+            if (string.IsNullOrEmpty(usrp.USR_RUT))
+            {
+                return BadRequest("El parámetro USR_RUT está vacío");
+            }
+
+            string usr_rut = new Encripta().Decrypt(usrp.USR_RUT, "");
+            if (string.IsNullOrEmpty(usr_rut))
+            {
+                return BadRequest("No se pudo desencriptar el parámetro USR_RUT");
+            }
+            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Actualizar_Password(usrp.USR_PASS, usrp.USR_RUT));
             return Ok("Contraseña Actualizada Correctamente");
         }
         catch (Exception ex)
         {
             return BadRequest("Se produjo un error al intentar actualizar la contraseña. Detalle: " + ex.Message);
         }
-
     }
+
+
+
 }
+
 
 //[HttpPost]
 //[Route("GeneraToken")]

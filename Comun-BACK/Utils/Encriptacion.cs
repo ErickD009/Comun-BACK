@@ -45,7 +45,7 @@ namespace ComunBack.Utils
             {
                 Data = Data.Replace(" ", "+");
                 byte[] cipherBytes = Convert.FromBase64String(Data);
-                string Password = clave == "" ? "cygnusDesdeElAmar" : clave;
+                string Password = clave == "" ? "3!J5tUp3Zu!5&hNj7u6d" : clave;
                 int Bits = 256;
                 PasswordDeriveBytes pdb = new PasswordDeriveBytes(Password, new byte[] { 0x0, 0x1, 0x2, 0x1C, 0x1D, 0x1E, 0x3, 0x4, 0x5, 0xF, 0x20, 0x21, 0xAD, 0xAF, 0xA4 });
 
@@ -58,7 +58,6 @@ namespace ComunBack.Utils
                 return ex.Message;
             }
         }
-
 
     }
 }

@@ -62,6 +62,8 @@ builder.Services.AddCors(opt =>
     });
 });
 
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
 var services = builder.Services;
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
