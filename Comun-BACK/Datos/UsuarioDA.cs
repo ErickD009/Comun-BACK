@@ -7,10 +7,12 @@ namespace ComunBACK.Datos
     public class UsuarioDA
     {
         private readonly IConfiguration configuration;
+        private readonly int minutosRecuperacionPass;
 
         public UsuarioDA(IConfiguration config)
-        { 
+        {
             this.configuration = config;
+            this.minutosRecuperacionPass = config.GetValue<int>("minutosRecuperacionPass");
         }
 
         public DataSet Usuario_Traer_Sistemas(string USR_LOGIN, string USR_PASSWORD)
@@ -27,7 +29,7 @@ namespace ComunBACK.Datos
 
                     cmd.SelectCommand.Parameters.AddWithValue("@USR_LOGIN", USR_LOGIN);
                     cmd.SelectCommand.Parameters.AddWithValue("@USR_PASSWORD", USR_PASSWORD);
-                    
+
                     cmd.Fill(Resultados);
                 }
 
@@ -39,7 +41,7 @@ namespace ComunBACK.Datos
             }
         }
 
-        public DataSet TRABAJADOR_TraeListadoEmpresas(string USR_LOGIN)
+        public DataSet TRABAJADOR_TraeListadoEmpresas(string USR_LOGIN, int minutosRecuperacionPass)
         {
             DataSet Resultados = new DataSet();
 
@@ -51,7 +53,14 @@ namespace ComunBACK.Datos
                     SqlDataAdapter cmd = new SqlDataAdapter("LOGIN_recuperacionClave_alternativas_V2", sqlConn);
                     cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
                     cmd.SelectCommand.Parameters.AddWithValue("@USR_LOGIN", USR_LOGIN);
+                    cmd.SelectCommand.Parameters.AddWithValue("@minutosRecuperacionPass", minutosRecuperacionPass);
                     cmd.Fill(Resultados);
+
+                    int estadoBloqueo = int.Parse(Resultados.Tables[0].Rows[0]["ESTADO_BLOQUEO"].ToString());
+                    if (estadoBloqueo == 0)
+                    {
+                        throw new Exception("Usuario bloqueado");
+                    }
                 }
 
                 return Resultados;
@@ -61,6 +70,8 @@ namespace ComunBACK.Datos
                 throw new Exception(ex.Message + " - " + ex.Source);
             }
         }
+
+
 
         public DataSet Usuario_Traer_Email(string USR_LOGIN)
         {
@@ -139,8 +150,104 @@ namespace ComunBACK.Datos
                 throw new Exception(ex.Message + " - " + ex.Source);
             }
         }
-         
-    }
 
+        public DataSet Log_Recuperar_Password(DateTime fecha, string usr_rut)
+        {
+            DataSet Resultados = new DataSet();
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+                {
+                    sqlConn.Open();
+                    SqlDataAdapter cmd = new SqlDataAdapter("LOG_Correo_Inserta", sqlConn);
+                    cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+                    cmd.SelectCommand.Parameters.AddWithValue("@FECHA", fecha);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", usr_rut);
+                    cmd.Fill(Resultados);
+                }
+                return Resultados;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + " - " + ex.Source);
+            }
+        }
+
+        //public DataSet Block_Usuario1(DateTime fecha, string usr_rut)
+        //{
+        //    DataSet Resultados = new DataSet();
+
+        //    try
+        //    {
+        //        using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+        //        {
+        //            sqlConn.Open();
+        //            SqlDataAdapter cmd = new SqlDataAdapter("LOG_Correo_Block_Inserta", sqlConn);
+        //            cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+        //            cmd.SelectCommand.Parameters.AddWithValue("@FECHA", fecha);
+        //            cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", usr_rut);
+        //            cmd.SelectCommand.Parameters.Add("@Bloqueado", SqlDbType.Bit).Direction = ParameterDirection.Output; // Agregar el parámetro @Bloqueado con dirección de salida
+        //            cmd.Fill(Resultados);
+        //            if ((bool)cmd.SelectCommand.Parameters["@Bloqueado"].Value) // Verificar si el usuario está bloqueado
+        //            {
+        //                throw new Exception("El usuario está bloqueado. Intente nuevamente en 5 minutos."); // Lanzar excepción con el mensaje de error
+        //            }
+        //        }
+        //        return Resultados;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message + " - " + ex.Source);
+        //    }
+        //}
+
+        public DataSet Block_Usuario(DateTime fecha, string usr_rut)
+        {
+            DataSet Resultados = new DataSet();
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+                {
+                    sqlConn.Open();
+                    SqlCommand cmd = new SqlCommand("LOG_Correo_Block_Inserta", sqlConn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Establecer parámetros de entrada
+                    cmd.Parameters.AddWithValue("@FECHA", fecha);
+                    cmd.Parameters.AddWithValue("@USR_RUT", usr_rut);
+
+                    // Establecer parámetro de salida
+                    SqlParameter bloqueadoParam = new SqlParameter("@Bloqueado", SqlDbType.Bit);
+                    bloqueadoParam.Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add(bloqueadoParam);
+
+                    // Ejecutar el comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener el valor del parámetro de salida
+                    bool bloqueado = (bool)cmd.Parameters["@Bloqueado"].Value;
+                    if (bloqueado)
+                    {
+                        // Usuario bloqueado
+                        throw new Exception("El usuario está bloqueado. Intente nuevamente en 5 minutos.");
+                    }
+                    else
+                    {
+                        // Usuario no bloqueado
+
+                    }
+                }
+                return Resultados;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + " - " + ex.Source);
+            }
+
+        }
+    }
 }
 
