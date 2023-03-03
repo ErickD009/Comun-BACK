@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ComunBACK.Datos
 {
@@ -71,8 +72,6 @@ namespace ComunBACK.Datos
             }
         }
 
-
-
         public DataSet Usuario_Traer_Email(string USR_LOGIN)
         {
             DataSet Resultados = new DataSet();
@@ -102,7 +101,7 @@ namespace ComunBACK.Datos
 
             try
             {
-                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comum")))
                 {
                     sqlConn.Open();
                     SqlDataAdapter cmd = new SqlDataAdapter("USUARIO_ActualizaClave", sqlConn);
@@ -175,79 +174,9 @@ namespace ComunBACK.Datos
             }
         }
 
-        //public DataSet Block_Usuario1(DateTime fecha, string usr_rut)
-        //{
-        //    DataSet Resultados = new DataSet();
+        
 
-        //    try
-        //    {
-        //        using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
-        //        {
-        //            sqlConn.Open();
-        //            SqlDataAdapter cmd = new SqlDataAdapter("LOG_Correo_Block_Inserta", sqlConn);
-        //            cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
-        //            cmd.SelectCommand.Parameters.AddWithValue("@FECHA", fecha);
-        //            cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", usr_rut);
-        //            cmd.SelectCommand.Parameters.Add("@Bloqueado", SqlDbType.Bit).Direction = ParameterDirection.Output; // Agregar el parámetro @Bloqueado con dirección de salida
-        //            cmd.Fill(Resultados);
-        //            if ((bool)cmd.SelectCommand.Parameters["@Bloqueado"].Value) // Verificar si el usuario está bloqueado
-        //            {
-        //                throw new Exception("El usuario está bloqueado. Intente nuevamente en 5 minutos."); // Lanzar excepción con el mensaje de error
-        //            }
-        //        }
-        //        return Resultados;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message + " - " + ex.Source);
-        //    }
-        //}
-
-        public DataSet Block_Usuario(DateTime fecha, string usr_rut)
-        {
-            DataSet Resultados = new DataSet();
-
-            try
-            {
-                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
-                {
-                    sqlConn.Open();
-                    SqlCommand cmd = new SqlCommand("LOG_Correo_Block_Inserta", sqlConn);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    // Establecer parámetros de entrada
-                    cmd.Parameters.AddWithValue("@FECHA", fecha);
-                    cmd.Parameters.AddWithValue("@USR_RUT", usr_rut);
-
-                    // Establecer parámetro de salida
-                    SqlParameter bloqueadoParam = new SqlParameter("@Bloqueado", SqlDbType.Bit);
-                    bloqueadoParam.Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add(bloqueadoParam);
-
-                    // Ejecutar el comando
-                    cmd.ExecuteNonQuery();
-
-                    // Obtener el valor del parámetro de salida
-                    bool bloqueado = (bool)cmd.Parameters["@Bloqueado"].Value;
-                    if (bloqueado)
-                    {
-                        // Usuario bloqueado
-                        throw new Exception("El usuario está bloqueado. Intente nuevamente en 5 minutos.");
-                    }
-                    else
-                    {
-                        // Usuario no bloqueado
-
-                    }
-                }
-                return Resultados;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + " - " + ex.Source);
-            }
-
-        }
+      
     }
 }
 

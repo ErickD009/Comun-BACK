@@ -114,7 +114,7 @@ public class ComunController : ControllerBase
             // Comprobar Bloqueo
             UsuarioDA usuarioDA = new UsuarioDA(_configuration);
 
-            usuarioDA.Block_Usuario(DateTime.Now, correo.Rut);
+           
 
             // Encriptar
 
@@ -189,7 +189,8 @@ public class ComunController : ControllerBase
             List<Usuario_X_Empresa> lista = new List<Usuario_X_Empresa>();
             if (ds.Tables[1].Rows.Count == 0)
             {
-                return BadRequest("No se encontraron empresas para este usuario.");
+                return BadRequest(new { message = "No se encontraron empresas para este usuario." });
+
             }
             else
             {
@@ -209,7 +210,7 @@ public class ComunController : ControllerBase
         {
             if (ex.Message.Contains("Usuario bloqueado"))
             {
-                return BadRequest("Error, sus intentos de recuperación de contraseña seran bloqueados por 60 minutos.");
+                return StatusCode(401,new { message = "Vuelva a intentarlo dentro de " + minutosRecuperacionPass + " minutos." });
             }
             else
             {
