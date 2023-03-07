@@ -37,7 +37,7 @@ public class ComunController : ControllerBase
         try
         {
             List<Usuario_X_Sistema> lista = new List<Usuario_X_Sistema>();
-            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Traer_Sistemas(usr.USR_LOGIN, usr.USR_PASSWORD));
+            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Traer_Sistemas(usr.USR_AUTOID));
             foreach (DataRow row in ds.Tables[0].Rows)
             {
                 Usuario_X_Sistema UxS = new Usuario_X_Sistema();
@@ -50,6 +50,11 @@ public class ComunController : ControllerBase
                 lista.Add(UxS);
             }
 
+            if (lista.Count == 0)
+            {
+                return BadRequest("La lista de sistemas del usuario está vacía.");
+            }
+
             return Ok(lista);
 
         }
@@ -57,7 +62,6 @@ public class ComunController : ControllerBase
         {
             return BadRequest("Se produjo un error al intentar traer los sistemas del usuario. Detalle: " + ex.Message);
         }
-
     }
 
     [HttpPost]

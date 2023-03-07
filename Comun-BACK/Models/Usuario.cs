@@ -2,7 +2,7 @@
 
     public class Usuario
     {
-        public int USR_AUTOID { get; set; }
+        public long USR_AUTOID { get; set; }
         public string? USR_LOGIN { get; set; }
         public string? USR_PASS { get; set; }
         public string? USR_NOMBRE { get; set; }

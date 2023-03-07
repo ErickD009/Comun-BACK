@@ -16,7 +16,7 @@ namespace ComunBACK.Datos
             this.minutosRecuperacionPass = config.GetValue<int>("minutosRecuperacionPass");
         }
 
-        public DataSet Usuario_Traer_Sistemas(string USR_LOGIN, string USR_PASSWORD)
+        public DataSet Usuario_Traer_Sistemas(long USR_AUTOID)
         {
             DataSet Resultados = new DataSet();
 
@@ -28,13 +28,12 @@ namespace ComunBACK.Datos
                     SqlDataAdapter cmd = new SqlDataAdapter("USUARIO_Traer_Sistemas_V2", sqlConn);
                     cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
 
-                    cmd.SelectCommand.Parameters.AddWithValue("@USR_LOGIN", USR_LOGIN);
-                    cmd.SelectCommand.Parameters.AddWithValue("@USR_PASSWORD", USR_PASSWORD);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_AUTOID", USR_AUTOID);
 
                     cmd.Fill(Resultados);
                 }
 
-                return Resultados;
+                return Resultados;  
             }
             catch (Exception ex)
             {
