@@ -94,19 +94,19 @@ namespace ComunBACK.Datos
             }
         }
 
-        public DataSet Usuario_Actualizar_Password(string USR_PASS, string USR_RUT)
+        public DataSet Usuario_Actualizar_Password(string USR_PASSWORD, string USR_DRUT)
         {
             DataSet Resultados = new DataSet();
 
             try
             {
-                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comum")))
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
                 {
                     sqlConn.Open();
                     SqlDataAdapter cmd = new SqlDataAdapter("USUARIO_ActualizaClave", sqlConn);
                     cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
-                    cmd.SelectCommand.Parameters.AddWithValue("@USR_PASS", USR_PASS);
-                    cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", USR_RUT);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_PASSWORD", USR_PASSWORD);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_RUT", USR_DRUT);
                     cmd.Fill(Resultados);
                 }
 
@@ -173,9 +173,6 @@ namespace ComunBACK.Datos
             }
         }
 
-        
-
-      
     }
 }
 

@@ -84,31 +84,6 @@ public class ComunController : ControllerBase
     }
 
     [HttpPost]
-    [Route("Usuario_Actualizar_Clave")]
-    public async Task<IActionResult> Usuario_Actualizar_Clave([FromBody] UsuarioClave usrp)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(usrp.USR_RUT))
-            {
-                return BadRequest("El parámetro USR_RUT está vacío");
-            }
-
-            string usr_rut = new Encripta().Decrypt(usrp.USR_RUT, "");
-            if (string.IsNullOrEmpty(usr_rut))
-            {
-                return BadRequest("No se pudo desencriptar el parámetro USR_RUT");
-            }
-            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Actualizar_Password(usrp.USR_PASS, usrp.USR_RUT));
-            return Ok("Contraseña Actualizada Correctamente");
-        }
-        catch (Exception ex)
-        {
-            return BadRequest("Se produjo un error al intentar actualizar la contraseña. Detalle: " + ex.Message);
-        }
-    }
-
-    [HttpPost]
     [Route("Usuario_Enviar_Correo_Recuperacion")]
     public async Task<IActionResult> Usuario_Enviar_Correo_Recuperacion([FromBody] CorreoRecuperacion correo)
     {
@@ -223,7 +198,36 @@ public class ComunController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("Usuario_Actualizar_Clave")]
+    public async Task<IActionResult> Usuario_Actualizar_Clave([FromBody] UsuarioClave usrp)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(usrp.USR_RUT))
+            {
+                return BadRequest("El parámetro USR_RUT está vacío");
+            }
 
+            string USR_DRUT = new Encripta().Decrypt(usrp.USR_RUT, "");
+            if (string.IsNullOrEmpty(USR_DRUT))
+            {
+                return BadRequest("No se pudo desencriptar el parámetro USR_RUT");
+            }
+
+            
+            string USR_PASSWORD = new Encripta().Encrypt(usrp.USR_PASSWORD, "");
+
+           
+            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Actualizar_Password(USR_PASSWORD, USR_DRUT));
+
+            return Ok("Contraseña Actualizada Correctamente");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Se produjo un error al intentar actualizar la contraseña. Detalle: " + ex.Message);
+        }
+    }
 
 }
 
