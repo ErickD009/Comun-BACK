@@ -33,7 +33,7 @@ namespace ComunBACK.Datos
                     cmd.Fill(Resultados);
                 }
 
-                return Resultados;  
+                return Resultados;
             }
             catch (Exception ex)
             {
@@ -166,6 +166,29 @@ namespace ComunBACK.Datos
                 }
                 return Resultados;
 
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + " - " + ex.Source);
+            }
+        }
+
+        public DataSet Validar_Usuario(string USR_RUT, string USR_PASSWORD)
+        {
+            DataSet Resultados = new DataSet();
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(configuration.GetConnectionString("cyg~comun")))
+                {
+                    sqlConn.Open();
+                    SqlDataAdapter cmd = new SqlDataAdapter("VALIDA_USUARIO_V2", sqlConn);
+                    cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_LOGIN", USR_RUT);
+                    cmd.SelectCommand.Parameters.AddWithValue("@USR_PASSWORD", USR_PASSWORD);
+                    cmd.Fill(Resultados);
+                }
+                return Resultados;
             }
             catch (Exception ex)
             {

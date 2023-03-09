@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Cors;
 using ComunBACK.Models;
 using ComunBACK.Datos;
 using System.Data.SqlClient;
-
+using ComunBACK.Utils;
 
 namespace ComunBack.Controllers;
 
@@ -40,11 +40,28 @@ public class ComunController : ControllerBase
             DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Traer_Sistemas(usr.USR_AUTOID));
             foreach (DataRow row in ds.Tables[0].Rows)
             {
+
+                BridgeCommand command = new BridgeCommand(DateTime.Now.ToString("dd-MM-yyyy"));
+                command["sessid"] = row["UXS_AUTOID"];
+                command["Hora"] = DateTime.Now;
+
+                //string cadena = HttpContext.Request..Url.AbsoluteUri;
+                //string[] Separado = cadena.Split('=');
+                //string valorURLToken = Separado[Separado.Length - 1];
+
+
+                //// htmlStr += "<li><a href=\"" + @"http://localhost:3099/Login.aspx" + "?sessid=" + command.GetEncoded() + "\" tooltip=\"\">"; 
+                //htmlStr += "<li><a href=\"" + dr["SIS_URL"].ToString() + "?sessid=" + command.GetEncoded() + "\" tooltip=\"\">";
+                //htmlStr += "<li><a href=\"" + dr["SIS_URL"].ToString() + "?sessid=" + command.GetEncoded() + "&jk=" + valorURLToken + "\" tooltip=\"\">";
+
                 Usuario_X_Sistema UxS = new Usuario_X_Sistema();
                 UxS.UXS_AUTOID = long.Parse((string)row["UXS_AUTOID"].ToString());
                 UxS.SIS_AUTOID = long.Parse((string)row["SIS_AUTOID"].ToString());
                 UxS.SIS_DESCRIPCION = row["SIS_DESCRIPCION"].ToString();
-                UxS.SIS_URL = row["SIS_URL"].ToString();
+                //UxS.SIS_URL = row["SIS_URL"].ToString();
+                UxS.SIS_URL = row["SIS_URL"].ToString() + "?sessid=" + command.GetEncoded(); // + "&jk=" + valorURLToken;
+
+
                 UxS.SIS_TOOLTIP = row["SIS_TOOLTIP"].ToString();
                 UxS.SIS_ICON_URL = row["SIS_ICON_URL"].ToString();
                 lista.Add(UxS);
@@ -93,7 +110,7 @@ public class ComunController : ControllerBase
             // Comprobar Bloqueo
             UsuarioDA usuarioDA = new UsuarioDA(_configuration);
 
-           
+
 
             // Encriptar
 
@@ -189,7 +206,7 @@ public class ComunController : ControllerBase
         {
             if (ex.Message.Contains("Usuario bloqueado"))
             {
-                return StatusCode(401,new { message = "Vuelva a intentarlo dentro de " + minutosRecuperacionPass + " minutos." });
+                return StatusCode(401, new { message = "Vuelva a intentarlo dentro de " + minutosRecuperacionPass + " minutos." });
             }
             else
             {
@@ -215,10 +232,10 @@ public class ComunController : ControllerBase
                 return BadRequest("No se pudo desencriptar el parámetro USR_RUT");
             }
 
-            
+
             string USR_PASSWORD = new Encripta().Encrypt(usrp.USR_PASSWORD, "");
 
-           
+
             DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Usuario_Actualizar_Password(USR_PASSWORD, USR_DRUT));
 
             return Ok("Contraseña Actualizada Correctamente");
@@ -226,6 +243,44 @@ public class ComunController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest("Se produjo un error al intentar actualizar la contraseña. Detalle: " + ex.Message);
+        }
+    }
+
+    [HttpPost]
+    [Route("Usuario_Validar")]
+    public async Task<IActionResult> Usuario_Validar([FromBody] UsuarioClave usrrp)
+    {
+
+        try
+        {
+            if (string.IsNullOrEmpty(usrrp.USR_RUT))
+            {
+                return BadRequest("El parámetro USR_RUT está vacío");
+            }
+
+            string USR_EPASSWORD = new Encripta().Encrypt(usrrp.USR_PASSWORD, "");
+            if (string.IsNullOrEmpty(USR_EPASSWORD))
+            {
+                return BadRequest("El campo password está vacío");
+            }
+
+            DataSet ds = await Task.Run(() => new UsuarioDA(_configuration).Validar_Usuario(usrrp.USR_RUT, USR_EPASSWORD));
+
+            if (ds.Tables[0].Rows.Count == 0)
+            {
+                return BadRequest("El usuario no existe o la contraseña es incorrecta");
+            }
+
+            Usuario usuario = new Usuario();
+            usuario.USR_AUTOID = Convert.ToInt64(ds.Tables[0].Rows[0]["USR_AUTOID"]);
+            usuario.USR_NOMBRE = ds.Tables[0].Rows[0]["USR_NOMBRE"].ToString();
+
+            return Ok(usuario);
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Se produjo un error al intentar ingresar. Detalle: " + ex.Message);
         }
     }
 

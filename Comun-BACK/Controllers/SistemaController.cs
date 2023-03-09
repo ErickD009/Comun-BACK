@@ -51,6 +51,7 @@ namespace ComunBack.Controllers
             //{
             //    return BadRequest("Se produjo un error al intentar autenticar. Detalle: " + ex.Message);
             //}
+
             try
             {
                 List<VersionSIS> lista = new List<VersionSIS>();
@@ -74,18 +75,6 @@ namespace ComunBack.Controllers
             {
                 return BadRequest("Se produjo un error al intentar traer las versiones. Detalle: " + ex.Message);
             }
-        }
-
-
-        [HttpPost]
-        [Route("GeneraToken")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public String GeneraToken()
-        {
-            //Eliminar este metodo, no sirve ***************************************************************************
-            Encripta encripta = new Encripta();
-            string token = encripta.Encrypt(DateTime.Now.ToString(),"");
-            return token;
         }
 
     }
