@@ -104,21 +104,21 @@ public class ComunController : ControllerBase
     [Route("Usuario_Enviar_Correo_Recuperacion")]
     public async Task<IActionResult> Usuario_Enviar_Correo_Recuperacion([FromBody] CorreoRecuperacion correo)
     {
-
         try
         {
-            // Comprobar Bloqueo
+           
             UsuarioDA usuarioDA = new UsuarioDA(_configuration);
 
-
-
-            // Encriptar
-
+            
             Encripta encripta = new Encripta();
-            string tokenHash = encripta.Encrypt(DateTime.Now.ToString(), "");
+            string tokenHash = encripta.Encrypt(DateTime.Now.ToString(), ""); 
             string rutHash = encripta.Encrypt(correo.Rut, "");
+            DateTime expirationDate = DateTime.Now.AddHours(1);
+            string expirationDateString = expirationDate.ToString("o"); 
             string urlRecupera = _urlRecuperacion;
+            string linkRecuperacion = urlRecupera + "?token=" + tokenHash + "&rut=" + rutHash + "&expiration=" + expirationDateString;
 
+            
             UsuarioDA emailDA = new UsuarioDA(_configuration);
             Email correoNuevo = new Email
             {
@@ -126,7 +126,7 @@ public class ComunController : ControllerBase
                 De = "sistemas@cygnus.cl",
                 CC = "",
                 Asunto = "Recuperación Contraseña Sistemas Cygnus",
-                Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + urlRecupera + "?token=" + tokenHash + "&rut=" + rutHash + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
+                Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + linkRecuperacion + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
                 Adjuntos = "",
                 EsHtml = 1,
                 NombreSistema = "Login",
@@ -140,7 +140,6 @@ public class ComunController : ControllerBase
         {
             return BadRequest("Se produjo un error al enviar el correo." + ex.Message);
         }
-
     }
 
     [HttpPost]
@@ -368,7 +367,46 @@ public class ComunController : ControllerBase
 //    }
 
 //}
+//[HttpPost]
+//[Route("Usuario_Enviar_Correo_Recuperacion")]
+//public async Task<IActionResult> Usuario_Enviar_Correo_Recuperacion([FromBody] CorreoRecuperacion correo)
+//{
 
+//    try
+//    {
+
+//        UsuarioDA usuarioDA = new UsuarioDA(_configuration);
+
+//        // Encriptar
+
+//        Encripta encripta = new Encripta();
+//        string tokenHash = encripta.Encrypt(DateTime.Now.ToString(), "");
+//        string rutHash = encripta.Encrypt(correo.Rut, "");
+//        string urlRecupera = _urlRecuperacion;
+
+//        UsuarioDA emailDA = new UsuarioDA(_configuration);
+//        Email correoNuevo = new Email
+//        {
+//            Para = correo.Para,
+//            De = "sistemas@cygnus.cl",
+//            CC = "",
+//            Asunto = "Recuperación Contraseña Sistemas Cygnus",
+//            Cuerpo = "Estimad@, <br /><br /> Se solicitó la recuperación de la contraseña desde el sitio web de Cygnus.<br /> <br />Por favor ingrese al siguiente link para poder actualizar su contraseña: <br> " + urlRecupera + "?token=" + tokenHash + "&rut=" + rutHash + "<br /><br /> Este link será válido solamente por una hora.<br>Una vez cumplido este tiempo, deberá solicitar nuevamente un cambio de contraseña. <br /><br /> Atte equipo Informatica",
+//            Adjuntos = "",
+//            EsHtml = 1,
+//            NombreSistema = "Login",
+//            MetodoEnvia = "SQL"
+//        };
+
+//        DataSet ds = await Task.Run(() => emailDA.EMAIL_Solicitud_Nueva_Contraseña(correoNuevo.De, correoNuevo.Para, correoNuevo.CC, correoNuevo.Asunto, correoNuevo.Cuerpo, correoNuevo.Adjuntos, correoNuevo.EsHtml, correoNuevo.NombreSistema, correoNuevo.MetodoEnvia));
+//        return Ok("Correo enviado!");
+//    }
+//    catch (Exception ex)
+//    {
+//        return BadRequest("Se produjo un error al enviar el correo." + ex.Message);
+//    }
+
+//}
 
 
 
